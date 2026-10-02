@@ -1,0 +1,14 @@
+{
+  "name": "ai-agent-2.0",
+  "version": "2.0.0",
+  "description": "AI Agent 2.0 with OpenVINO Model Server and TrueForge Agent Harness",
+  "scripts": {
+    "start": "./start_agent.sh",
+    "stop": "./stop_agent.sh",
+    "ovms:start": "./start.sh",
+    "ovms:stop": "./stop.sh"
+  },
+  "dependencies": {
+    "@truefoundry/trueforge": "^0.2.1"
+  }
+}

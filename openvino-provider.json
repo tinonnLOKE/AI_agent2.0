@@ -1,0 +1,44 @@
+{
+  "manifest": {
+    "type": "custom",
+    "name": "openvino",
+    "base_url": "http://localhost:8000/v1",
+    "auth": {
+      "api_key": "ovms-local"
+    },
+    "models": [
+      {
+        "model_id": "gemma4_gpu",
+        "name": "gemma4-gpu",
+        "properties": {
+          "context_length": 262144,
+          "max_output_tokens": 8192
+        }
+      },
+      {
+        "model_id": "qwen3_gpu",
+        "name": "qwen3-gpu",
+        "properties": {
+          "context_length": 32768,
+          "max_output_tokens": 8192
+        }
+      },
+      {
+        "model_id": "gemma4_cpu",
+        "name": "gemma4-cpu",
+        "properties": {
+          "context_length": 262144,
+          "max_output_tokens": 8192
+        }
+      },
+      {
+        "model_id": "qwen3_cpu",
+        "name": "qwen3-cpu",
+        "properties": {
+          "context_length": 32768,
+          "max_output_tokens": 8192
+        }
+      }
+    ]
+  }
+}

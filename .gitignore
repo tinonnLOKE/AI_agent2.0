@@ -6,9 +6,12 @@ models/**
 *.xml
 
 # Runtime logs and temporary artifacts
+logs/
 *.log
+*.pid
 .system_generated/
 scratch/
 node_modules/
+data/
 .DS_Store
 .env

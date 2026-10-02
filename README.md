@@ -1,62 +1,91 @@
-# AI Performance – OpenVINO Model Server & AI Harness
+# AI Agent 2.0 – OpenVINO Model Server & TrueForge Agent Harness
 
-A multi-model, multi-accelerator serving system powered by **Intel OpenVINO Model Server (OVMS)** with continuous batching and an integrated **AI Harness** chat web application.
+A high-performance AI agent platform powered by **Intel OpenVINO Model Server (OVMS)** with Intel Arc GPU acceleration and the open-source **TrueForge** agent harness.
 
 ## System Architecture
 
 ```mermaid
 flowchart TD
-    subgraph Clients["Clients"]
-        WebUI["AI Harness Web App (:9000)<br>Local & LAN 192.168.1.150:9000"]
-        API["REST / OpenAI API (:8000)"]
+    subgraph Users["User Interfaces & Integrations"]
+        TFUI["🌐 TrueForge Web UI (:8790)<br>• Agent Chat & Reasoning<br>• Session Management<br>• Tool/Skill Studio<br>• Settings (Cloud APIs)"]
+        REST["🔌 REST / OpenAI API (:8000)<br>• /v1/chat/completions<br>• /v1/models"]
+        GRPC["⚡ gRPC API (:9001)"]
     end
 
-    subgraph OVMS["OpenVINO Model Server (Docker Container)"]
-        subgraph Models["Servables"]
-            TL["TinyLlama 1.1B<br>• tinyllama_cpu<br>• tinyllama_gpu<br>• tinyllama_npu"]
-            QW["Qwen3 8B<br>• qwen3_cpu<br>• qwen3_gpu"]
-            GM["Gemma 4 26B (A4B)<br>• gemma4_cpu<br>• gemma4_gpu"]
-        end
+    subgraph TrueForge["TrueForge Agent Harness (:8790)"]
+        AgentRuntime["Agent Loop & Reasoning"]
+        ToolManager["MCP Tools & Local Sandbox"]
+        Compaction["Context Management & Compaction"]
+        SQLiteDB[("SQLite Storage<br>Sessions, Turns, Agents")]
     end
 
-    subgraph Hardware["Hardware Targets (Intel Core Ultra X7 358H)"]
-        CPU["💻 Host CPU"]
+    subgraph OVMS["OpenVINO Model Server (Docker: ovms_ai_agent)"]
+        Gemma["Gemma 4 26B (A4B INT4)<br>• gemma4_gpu<br>• gemma4_cpu"]
+        Qwen["Qwen3 8B (INT4 Thinking)<br>• qwen3_gpu<br>• qwen3_cpu"]
+    end
+
+    subgraph Hardware["Hardware Acceleration"]
         GPU["🎮 Intel Arc Xe GPU (/dev/dri)"]
-        NPU["⚡ Intel Panther Lake NPU (/dev/accel)"]
+        CPU["💻 Host CPU"]
     end
 
-    WebUI -->|SSE Streaming / JSON| OVMS
-    API --> OVMS
-    TL --> CPU & GPU & NPU
-    QW --> CPU & GPU
-    GM --> CPU & GPU
+    TFUI --> TrueForge
+    TrueForge -->|OpenAI Compatible REST| OVMS
+    REST --> OVMS
+    GRPC --> OVMS
+    Gemma --> GPU & CPU
+    Qwen --> GPU & CPU
 ```
 
 ## Model Matrix
 
-| Model | Size | Parameters | Context Window | Target Devices | Quantization |
+| Model | Parameters | Quantization | Context Window | Target Devices | Highlights |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **TinyLlama 1.1B Chat** | 631 MB | 1.1 Billion | 2,048 tokens | CPU, GPU, NPU | INT4 |
-| **Qwen3 8B Chat** | 4.86 GB | 8.23 Billion | 32,768 tokens | CPU, GPU | INT4 |
-| **Gemma 4 26B-A4B** | 15.3 GB | 26B (4B Active) | 262,144 tokens | CPU, GPU | INT4 |
-
-## Submodules
-- [`AI_harness`](./AI_harness): Browser chat application with hardware compute switcher, thinking mode selector, model specs sidebar, and real-time profiler.
+| **Gemma 4 26B (A4B)** | 26 Billion (4B Active) | INT4 | 262,144 tokens | Intel Arc GPU, CPU | MoE architecture, fast throughput, ultra-long context |
+| **Qwen3 8B** | 8.23 Billion | INT4 | 32,768 tokens | Intel Arc GPU, CPU | Deep reasoning with explicit `<think>` thought chains |
 
 ## Quick Start
+
+### 1. Launch the Full Stack (OVMS + TrueForge)
 ```bash
-# Clone with submodules
-git clone --recurse-submodules https://github.com/tolokedf/AI_performance.git
-cd AI_performance
+./start_agent.sh
+```
+This automatically verifies OpenVINO Model Server is running on port 8000, starts TrueForge on port 8790, and synchronizes the local OpenVINO model provider.
 
-# Start OVMS container
-./start.sh
+### 2. Access the Web Application
+Open your browser at:
+- **TrueForge Agent Web UI**: [http://localhost:8790](http://localhost:8790)
 
-# Start AI Harness Web App
-cd AI_harness && ./start.sh
+### 3. Stop the Agent Harness
+```bash
+# Stop TrueForge harness
+./stop_agent.sh
+
+# Stop both TrueForge and the OVMS container
+./stop_agent.sh --all
 ```
 
-## Network Access
-- **AI Harness Web App**: `http://localhost:9000` or `http://<LAN_IP>:9000`
-- **OVMS OpenAI API**: `http://localhost:8000/v3/chat/completions`
-- **OVMS Health & Status**: `http://localhost:8000/v1/config`
+## Managing Inference Models & Cloud Providers
+
+### Local Models (OpenVINO Model Server)
+- **`openvino/gemma4-gpu`**: Gemma-4 26B running with hardware acceleration on Intel Arc GPU.
+- **`openvino/qwen3-gpu`**: Qwen3 8B running with hardware acceleration on Intel Arc GPU.
+- **`openvino/gemma4-cpu`**: Fallback to CPU execution.
+- **`openvino/qwen3-cpu`**: Fallback to CPU execution.
+
+### Cloud Providers (BYOK)
+In the TrueForge Web UI, click **Settings -> Model Providers** to configure external cloud APIs:
+- **Google Gemini** (Gemini 2.5 / 3.x Flash / Pro)
+- **OpenAI** (GPT-4o, GPT-5.x)
+- **Anthropic Claude** (Claude 3.5 Sonnet / Haiku / Opus)
+- **Fireworks / Together AI / DeepSeek**
+
+## Endpoints Summary
+
+| Service | Port | Endpoint | Description |
+| :--- | :--- | :--- | :--- |
+| **TrueForge UI & API** | `8790` | `http://localhost:8790/` | Main web agent chat interface |
+| **TrueForge API Docs** | `8790` | `http://localhost:8790/api/v1/docs` | OpenAPI specification and interactive docs |
+| **OVMS OpenAI REST** | `8000` | `http://localhost:8000/v1/chat/completions` | Standard OpenAI-compatible chat endpoint |
+| **OVMS Models List** | `8000` | `http://localhost:8000/v1/models` | List of models currently loaded in OVMS |
+| **OVMS gRPC** | `9001` | `localhost:9001` | High-throughput gRPC streaming |
