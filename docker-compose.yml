@@ -1,0 +1,21 @@
+services:
+  ovms:
+    image: openvino/model_server:latest-gpu
+    container_name: ovms_tinyllama
+    restart: unless-stopped
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/accel:/dev/accel
+    group_add:
+      - "44"
+      - "990"
+    ports:
+      - "8000:8000"   # REST / OpenAI Chat Completions API
+      - "9001:9001"   # gRPC API
+    volumes:
+      - ./models:/models:ro
+      - ./config.json:/config.json:ro
+    command: >
+      --config_path /config.json
+      --port 9001
+      --rest_port 8000

@@ -1,0 +1,3 @@
+[submodule "AI_harness"]
+	path = AI_harness
+	url = https://github.com/tinonnLOKE/AI_harness.git

@@ -1,0 +1,14 @@
+# Model weights and downloaded binaries (downloaded via OVMS/scripts from Hugging Face)
+models/
+models/**
+*.bin
+*.binlfs_part
+*.xml
+
+# Runtime logs and temporary artifacts
+*.log
+.system_generated/
+scratch/
+node_modules/
+.DS_Store
+.env
