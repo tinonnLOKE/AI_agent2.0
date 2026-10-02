@@ -4,10 +4,15 @@ set -e
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 cd "$DIR"
 
+HOST="${HOST:-0.0.0.0}"
 PORT="${PORT:-8790}"
 LOG_DIR="$DIR/logs"
 mkdir -p "$LOG_DIR"
 TRUEFORGE_LOG="$LOG_DIR/trueforge.log"
+
+# Detect primary LAN IP
+LAN_IP=$(ip -4 route get 1.1.1.1 2>/dev/null | grep -oP 'src \K\S+' || hostname -I 2>/dev/null | awk '{print $1}')
+LAN_IP="${LAN_IP:-127.0.0.1}"
 
 echo "=========================================="
 echo " Starting AI Agent 2.0 (OVMS + TrueForge) "
@@ -22,10 +27,15 @@ else
 fi
 
 # 2. Check if TrueForge is already running on PORT
-if curl -s "http://127.0.0.1:${PORT}/" >/dev/null 2>&1; then
-  echo "✔ TrueForge is already running on port ${PORT}."
+if curl -s "http://127.0.0.1:${PORT}/" >/dev/null 2>&1 && ss -tulpn 2>/dev/null | grep -q "0.0.0.0:${PORT}"; then
+  echo "✔ TrueForge is already running on ${HOST}:${PORT}."
 else
-  echo "Starting TrueForge on port ${PORT}..."
+  if curl -s "http://127.0.0.1:${PORT}/" >/dev/null 2>&1; then
+    echo "TrueForge is running on 127.0.0.1. Restarting to bind to all interfaces (${HOST})..."
+    ./stop_agent.sh
+  fi
+  echo "Starting TrueForge on ${HOST}:${PORT}..."
+  export HOST="$HOST"
   export PORT="$PORT"
   export STANDALONE=true
   export NETWORK_POLICY_ENABLED=false
@@ -66,7 +76,8 @@ echo ""
 echo "=========================================="
 echo " AI Agent 2.0 is READY! "
 echo "=========================================="
-echo " Web UI:           http://localhost:${PORT}"
+echo " Local Web UI:     http://localhost:${PORT}"
+echo " LAN / IP Web UI:  http://${LAN_IP}:${PORT}"
 echo " OVMS REST API:    http://localhost:8000/v1"
 echo " Active Models:    openvino/gemma4-gpu (Intel Arc GPU)"
 echo "                   openvino/qwen3-gpu  (Intel Arc GPU)"
