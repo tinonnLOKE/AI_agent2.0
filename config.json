@@ -2,18 +2,6 @@
   "model_config_list": [],
   "mediapipe_config_list": [
     {
-      "name": "tinyllama_cpu",
-      "base_path": "/models/servables/cpu"
-    },
-    {
-      "name": "tinyllama_gpu",
-      "base_path": "/models/servables/gpu"
-    },
-    {
-      "name": "tinyllama_npu",
-      "base_path": "/models/servables/npu"
-    },
-    {
       "name": "qwen3_cpu",
       "base_path": "/models/servables/qwen3_cpu"
     },
